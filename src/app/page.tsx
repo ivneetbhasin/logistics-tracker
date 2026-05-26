@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -6,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     let ignore = false;
-    fetch("/api/statistics?metric=delivery_rate")
+    fetch("/api/delivery-statistics?metric=delivery_rate")
       .then((res) => res.json())
       .then((data) => {
         if (!ignore) setStats(data);

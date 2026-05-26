@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import  supabase  from "../../lib/supabase";
+import  supabase  from "../../../lib/supabase";
 
 export async function GET(req: NextRequest) {
 
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     .lte("event_timestamp", endDate);
 
   if (driverIds?.length) {
-    query = query.in("driver_id", driverIds);
+    query = query.in("driverID", driverIds);
   }
 
   const { data: events, error } =
@@ -54,15 +54,15 @@ export async function GET(req: NextRequest) {
 
     const { data: drivers } = await supabase
       .from("drivers")
-      .select("driver_id, region")
+      .select("driverID, region")
       .in("region", regions);
 
     const allowedDrivers =
-      drivers?.map((d) => d.driver_id) || [];
+      drivers?.map((d) => d.driverID) || [];
 
     filteredEvents =
       filteredEvents.filter((e) =>
-        allowedDrivers.includes(e.driver_id)
+        allowedDrivers.includes(e.driverID)
       );
   }
 
