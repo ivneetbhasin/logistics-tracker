@@ -1,123 +1,155 @@
 import { NextRequest, NextResponse } from "next/server";
 import  supabase  from "../../../lib/supabase";
 
+import{
+  deliveryStatsSchema,
+  DeliveryStatsQuery
+} from '../../../validators/deliveryStatistics.validator';
+
 export async function GET(req: NextRequest) {
+ try {
+    const { searchParams } = new URL(req.url)
 
-  const { searchParams } = new URL(req.url);
+    const queryParams = {
+      driverIds:
+        searchParams.get('driverIds') ||
+        undefined,
 
-  const metric =
-    searchParams.get("metric") ||
-    "total_packages";
+      regions:
+        searchParams.get('regions') ||
+        undefined,
 
-  const driverIds =
-    searchParams
-      .get("driverIds")
-      ?.split(",")
-      .map(Number);
+      metric:
+        searchParams.get('metric') ||
+        'total_packages',
 
-  const regions =
-    searchParams
-      .get("regions")
-      ?.split(",");
+      startDate:
+        searchParams.get('startDate') ||
+        undefined,
 
-  const startDate =
-    searchParams.get("startDate") ||
-    new Date().toISOString();
+      endDate:
+        searchParams.get('endDate') ||
+        undefined,
+    }
 
-  const endDate =
-    searchParams.get("endDate") ||
-    new Date().toISOString();
+    // Validate query params
+    const parsed = deliveryStatsSchema.safeParse(queryParams)
 
-  let query = supabase
-    .from("delivery_events")
-    .select("*")
-    .gte("event_timestamp", startDate)
-    .lte("event_timestamp", endDate);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          errors: parsed.error.issues,
+        },
+        { status: 400 }
+      )
+    }
 
-  if (driverIds?.length) {
-    query = query.in("driverID", driverIds);
-  }
+    const query: DeliveryStatsQuery = parsed.data
 
-  const { data: events, error } =
-    await query;
+    // Default to current day
+    const today = new Date().toISOString().split('T')[0]
 
-  if (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
-  }
+    const startDate = query.startDate || today
 
-  let filteredEvents = events || [];
+    const endDate = query.endDate || today
 
-  if (regions?.length) {
+    let deliveryEventsQuery = supabase
+      .from('delivery_events')
+      .select(`
+        package_id,
+        driverID,
+        status,
+        event_timestamp,
+        drivers!inner(region)
+      `)
+      .gte('event_timestamp', `${startDate}T00:00:00`)
+      .lte('event_timestamp', `${endDate}T23:59:59`)
 
-    const { data: drivers } = await supabase
-      .from("drivers")
-      .select("driverID, region")
-      .in("region", regions);
+    // Filter by driver IDs
+    if (query.driverIds) {
+      const ids = query.driverIds.split(',').map(Number)
 
-    const allowedDrivers =
-      drivers?.map((d) => d.driverID) || [];
+      deliveryEventsQuery = deliveryEventsQuery.in('driverID', ids)
+    }
 
-    filteredEvents =
-      filteredEvents.filter((e) =>
-        allowedDrivers.includes(e.driverID)
-      );
-  }
+    // Filter by regions
+    if (query.regions) {
+      const regionList = query.regions.split(',').map((r) => r.trim())
 
-  const totalPackages =
-    new Set(
-      filteredEvents.map((e) => e.package_id)
+      deliveryEventsQuery = deliveryEventsQuery.in('drivers.region', regionList)
+    }
+
+    const { data, error } = await deliveryEventsQuery
+
+    if (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        { status: 500 }
+      )
+    }
+
+    // Compute metrics
+    const totalPackages =  new Set(
+      data.map((e) => e.package_id)
     ).size;
 
-  const delivered =
-    filteredEvents.filter(
-      (e) => e.status === "delivered"
-    ).length;
+    const deliveredCount =
+      data.filter((d) => d.status === 'delivered').length
 
-  const failed =
-    filteredEvents.filter(
-      (e) => e.status === "failed"
-    ).length;
+    const failedCount =
+      data.filter((d) => d.status === 'failed').length
 
-  let result = 0;
+    const days =
+      (
+        (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+        (1000 * 60 * 60 * 24)
+      ) + 1
 
-  switch (metric) {
+    let result: number = 0
 
-    case "total_packages":
-      result = totalPackages;
-      break;
+    switch (query.metric) {
+      case 'total_packages':
+        result = totalPackages
+        break
 
-    case "delivery_rate":
-      result =
-        totalPackages > 0
-          ? (delivered / totalPackages) * 100
-          : 0;
-      break;
+      case 'delivery_rate':
+        result =
+          totalPackages === 0
+            ? 0
+            : (deliveredCount / totalPackages) * 100
+        break
 
-    case "failure_rate":
-      result =
-        totalPackages > 0
-          ? (failed / totalPackages) * 100
-          : 0;
-      break;
+      case 'failure_rate':
+        result =
+          totalPackages === 0
+            ? 0
+            : (failedCount / totalPackages) * 100
+        break
 
-    case "avg_deliveries_per_day":
+      case 'avg_deliveries_per_day':
+        result =
+          days === 0
+            ? 0
+            : deliveredCount / days
+        break
+    }
 
-      const days =
-        (new Date(endDate).getTime() -
-          new Date(startDate).getTime()) /
-        (1000 * 60 * 60 * 24);
-
-      result =
-        delivered / Math.max(days, 1);
-
-      break;
+    return NextResponse.json({
+      success: true,
+      result,
+    })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Upload failed'
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+      },
+      { status: 500 }
+    )
   }
-
-  return NextResponse.json({
-    metric,
-    result,
-  });
 }
