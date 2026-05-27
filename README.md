@@ -52,7 +52,7 @@ Upload drivers via CSV file.
 
 Sample csv file is saved in drivers.csv in project.
 
-To Upload the drivers :
+**To Upload the drivers :**
 
 1) start the server using npm run dev in terminal.
 2) Two ways to upload the drivers :
@@ -85,7 +85,7 @@ Samle JSON request
   "timestamp": "2026-05-24T11:00:00Z"
 }
 
-To Update the delivery events :
+**To Update the delivery events :**
 
 1) start the server using npm run dev in terminal.
 2) Two ways to upload the drivers :
@@ -117,7 +117,7 @@ Query delivery analytics with optional filters.
 - `failure_rate` — Percentage of events with status `failed`
 - `avg_deliveries_per_day` — Average delivered events per day in the range
 
-To get the delivery statistics :
+**To get the delivery statistics :**
 
 1) start the server using npm run dev in terminal.
 2) Two ways to upload the drivers :
@@ -132,6 +132,21 @@ To get the delivery statistics :
        # Average deliveries per day
        curl "http://localhost:3000/api/delivery-statistics?metric=avg_deliveries_per_day&startDate=2026-05-01&endDate=2026-05-07"
     b) Use postman and set json in the body.
+
+
+## GET drivers and delivery-events table data
+
+1.) GET drivers table data
+    
+    curl 'https://ctcmmonsbiurvxbbvvzs.supabase.co/rest/v1/drivers?select=*' \
+-H "apikey: SUPABASE_KEY" \
+-H "Authorization: Bearer SUPABASE_KEY"
+
+2.) GET delivery events table data
+
+    curl 'https://ctcmmonsbiurvxbbvvzs.supabase.co/rest/v1/delivery_events?select=*' \
+-H "apikey: SUPABASE_KEY" \
+-H "Authorization: Bearer SUPABASE_KEY"
 
 ## Testing
 
