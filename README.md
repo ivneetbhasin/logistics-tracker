@@ -52,6 +52,14 @@ Upload drivers via CSV file.
 
 Sample csv file is saved in drivers.csv in project.
 
+To Upload the drivers :
+
+1) start the server using npm run dev in terminal.
+2) Two ways to upload the drivers :
+    a) use CURL command in separate terminal
+        curl -X POST http://localhost:3000/api/drivers \
+  -F "drivers=@drivers.csv"
+    b) Use postman and select drivers file with form-data.
 
 ---
 
@@ -77,6 +85,15 @@ Samle JSON request
   "timestamp": "2026-05-24T11:00:00Z"
 }
 
+To Update the delivery events :
+
+1) start the server using npm run dev in terminal.
+2) Two ways to upload the drivers :
+    a) use CURL command in separate terminal
+       curl -X POST http://localhost:3000/api/delivery-events \
+  -H "Content-Type: application/json" \
+  -d '{"packageId": "PKG3456", "driverID": 5, "status": "picked_up", "timestamp": "2026-05-24T11:00:00Z"}'
+    b) Use postman and set json in the body.
 ---
 
 ### GET /api/delivery-statistics
@@ -99,6 +116,22 @@ Query delivery analytics with optional filters.
 - `delivery_rate` — Percentage of events with status `delivered`
 - `failure_rate` — Percentage of events with status `failed`
 - `avg_deliveries_per_day` — Average delivered events per day in the range
+
+To get the delivery statistics :
+
+1) start the server using npm run dev in terminal.
+2) Two ways to upload the drivers :
+    a) use CURL command in separate terminal
+        curl "http://localhost:3000/api/delivery-statistics?metric=total_packages&startDate=2026-05-01&endDate=2026-05-31"
+       # With driver filter
+        curl "http://localhost:3000/api/delivery-statistics?metric=delivery_rate&startDate=2026-05-01&endDate=2026-05-31&driverIds=1,2,3"
+
+       # With region filter
+        curl "http://localhost:3000/api/delivery-statistics?metric=failure_rate&startDate=2026-05-01&endDate=2026-05-31&regions=north,south"
+
+       # Average deliveries per day
+       curl "http://localhost:3000/api/delivery-statistics?metric=avg_deliveries_per_day&startDate=2026-05-01&endDate=2026-05-07"
+    b) Use postman and set json in the body.
 
 ## Testing
 
