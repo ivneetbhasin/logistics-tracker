@@ -140,10 +140,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      data: query,
       result,
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Upload failed'
+    const message = err instanceof Error ? err.message : 'failed'
     return NextResponse.json(
       {
         success: false,

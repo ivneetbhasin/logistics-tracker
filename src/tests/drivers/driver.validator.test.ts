@@ -5,7 +5,7 @@ import {
 describe('Driver Validator', () => {
   it('should validate valid driver', () => {
     const result = driverSchema.safeParse({
-      driver_id: 1,
+      driverID: 1,
       name: 'John Doe',
       phone: '123456789',
       email: 'john@test.com',
@@ -17,7 +17,7 @@ describe('Driver Validator', () => {
 
   it('should reject invalid email', () => {
     const result = driverSchema.safeParse({
-      driver_id: 1,
+      driverID: 1,
       name: 'John Doe',
       phone: '123456789',
       email: 'bad-email',
@@ -29,7 +29,7 @@ describe('Driver Validator', () => {
 
   it('should reject invalid region', () => {
     const result = driverSchema.safeParse({
-      driver_id: 1,
+      driverID: 1,
       name: 'John Doe',
       phone: '123456789',
       email: 'john@test.com',
@@ -41,7 +41,7 @@ describe('Driver Validator', () => {
 
   it('should reject negative driver id', () => {
     const result = driverSchema.safeParse({
-      driver_id: -1,
+      driverID: -1,
       name: 'John Doe',
       phone: '123456789',
       email: 'john@test.com',

@@ -14,14 +14,6 @@ export async function POST(req: NextRequest) {
 
     const file = formData.get('drivers') as File
 
-    const text = await file.text();
-
-    const validatedDrivers: DriverInput[] = []
-    const errors: Array<{ row: number; errors: unknown }> = []
-
-    // Track duplicates inside CSV
-    const DriverIds = new Set<number>()
-
     if (!file) {
       return NextResponse.json(
         { error: 'CSV file is required' },
@@ -35,6 +27,14 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
+
+    const text = await file.text();
+
+    const validatedDrivers: DriverInput[] = []
+    const errors: Array<{ row: number; errors: unknown }> = []
+
+    // Track duplicates inside CSV
+    const DriverIds = new Set<number>()
 
     const records: Record<string, string>[] = parse(text, {
       columns: true,

@@ -11,8 +11,8 @@ const config: Config = {
   collectCoverage: true,
 
   collectCoverageFrom: [
-    'app/**/*.ts',
-    'validators/**/*.ts',
+    'src/app/**/*.ts',
+    'src/validators/*.ts',
     '!**/node_modules/**',
   ],
 

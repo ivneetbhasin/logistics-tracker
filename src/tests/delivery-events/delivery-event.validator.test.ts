@@ -6,8 +6,8 @@ describe('Delivery Event Validator', () => {
   it('should validate valid event', () => {
     const result =
       deliveryEventSchema.safeParse({
-        package_id: 'PKG-1',
-        driver_id: 1,
+        packageId: 'PKG-1',
+        driverID: 1,
         status: 'delivered',
         timestamp:
           '2026-05-26T10:00:00Z',
@@ -19,8 +19,8 @@ describe('Delivery Event Validator', () => {
   it('should reject invalid status', () => {
     const result =
       deliveryEventSchema.safeParse({
-        package_id: 'PKG-1',
-        driver_id: 1,
+        packageId: 'PKG-1',
+        driverID: 1,
         status: 'shipping',
         timestamp:
           '2026-05-26T10:00:00Z',
@@ -32,8 +32,8 @@ describe('Delivery Event Validator', () => {
   it('should reject invalid timestamp', () => {
     const result =
       deliveryEventSchema.safeParse({
-        package_id: 'PKG-1',
-        driver_id: 1,
+        packageId: 'PKG-1',
+        driverID: 1,
         status: 'delivered',
         timestamp: 'invalid-date',
       })

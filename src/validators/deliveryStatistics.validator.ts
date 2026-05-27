@@ -63,8 +63,6 @@ export const deliveryStatsSchema = z
       const ids =
         data.driverIds.split(',')
 
-console.log('driver ids ' + ids);
-
       for (const id of ids) {
         if (
           isNaN(Number(id.trim()))

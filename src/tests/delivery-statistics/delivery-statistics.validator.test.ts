@@ -33,16 +33,80 @@ describe('Delivery Stats Validator', () => {
       })
 
     expect(result.success).toBe(false)
- })
+  })
 
-  it('should reject invalid date range', () => {
+  it('should reject when startDate is after endDate', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'delivery_rate',
+        startDate: '2026-05-10',
+        endDate: '2026-05-01',
+      })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message)
+      expect(messages).toContain('startDate cannot be after endDate')
+    }
+  })
+
+  it('should allow when startDate equals endDate', () => {
     const result =
       deliveryStatsSchema.safeParse({
         metric: 'delivery_rate',
         startDate: '2026-05-01',
-        endDate: '2026-06-20',
+        endDate: '2026-05-01',
+      })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should allow when startDate is before endDate', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'delivery_rate',
+        startDate: '2026-05-01',
+        endDate: '2026-05-05',
+      })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should reject non-numeric driver ID', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'total_packages',
+        driverIds: 'abc',
       })
 
     expect(result.success).toBe(false)
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message)
+      expect(messages).toContain('Invalid driver ID: abc')
+    }
+  })
+
+  it('should reject mixed valid and invalid driver IDs', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'total_packages',
+        driverIds: '1,abc,3',
+      })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message)
+      expect(messages).toContain('Invalid driver ID: abc')
+    }
+  })
+
+  it('should allow valid numeric driver IDs', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'total_packages',
+        driverIds: '1,2,3',
+      })
+
+    expect(result.success).toBe(true)
   })
 })
