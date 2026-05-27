@@ -109,4 +109,41 @@ describe('Delivery Stats Validator', () => {
 
     expect(result.success).toBe(true)
   })
+
+  it('should reject date range exceeding 31 days', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'total_packages',
+        startDate: '2026-05-01',
+        endDate: '2026-06-02',
+      })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message)
+      expect(messages).toContain('Date range cannot exceed 31 days')
+    }
+  })
+
+  it('should allow date range of exactly 31 days', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'total_packages',
+        startDate: '2026-05-01',
+        endDate: '2026-06-01',
+      })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should allow date range under 31 days', () => {
+    const result =
+      deliveryStatsSchema.safeParse({
+        metric: 'total_packages',
+        startDate: '2026-05-01',
+        endDate: '2026-05-20',
+      })
+
+    expect(result.success).toBe(true)
+  })
 })

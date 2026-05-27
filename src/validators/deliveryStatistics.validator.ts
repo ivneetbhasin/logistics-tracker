@@ -36,6 +36,21 @@ export const deliveryStatsSchema = z
           path: ['startDate'],
         })
       }
+
+      const diffMs =
+        end.getTime() - start.getTime()
+
+      const diffDays =
+        diffMs / (1000 * 60 * 60 * 24)
+
+      if (diffDays > 31) {
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            'Date range cannot exceed 31 days',
+          path: ['endDate'],
+        })
+      }
     }
 
     // Validate regions list
